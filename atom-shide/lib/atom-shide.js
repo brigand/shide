@@ -2,12 +2,17 @@
 
 import AtomShideView from './atom-shide-view';
 import { CompositeDisposable } from 'atom';
+import getCommands from 'shide/lib/getCommands';
 
 export default {
 
   atomShideView: null,
   modalPanel: null,
   subscriptions: null,
+
+  getWorkDir() {
+    return atom.project.getPaths()[0];;
+  },
 
   activate(state) {
     this.atomShideView = new AtomShideView(state.atomShideViewState);
@@ -19,10 +24,28 @@ export default {
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
 
-    // Register command that toggles this view
     this.subscriptions.add(atom.commands.add('atom-workspace', {
-      'atom-shide:toggle': () => this.toggle()
+      'shide:reload': () => this.init(),
     }));
+
+    this.init();
+  },
+
+  async init() {
+    if (this.extraActions) this.extraActions.dispose();
+
+    this.extraActions = new CompositeDisposable();
+    const commands = await getCommands(this.getWorkDir());
+    Object.keys(commands).forEach((key) => {
+      const command = commands[key];
+      this.extraActions.add(atom.commands.add('atom-workspace', {
+        [`shide-command:${command.name}`]: () => this.perform(command),
+      }));
+    });
+  },
+
+  async perform(command) {
+    console.log(`performing command ${command.displayName}`);
   },
 
   deactivate() {
