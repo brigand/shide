@@ -44,7 +44,7 @@ async function getCommands(workDir) {
       try {
         data = JSON.parse(json);
       } catch (e) {
-        atom.notifications.addWarning(`Shide: Failed to parse ${file} as json`);
+        console.error(`SHIDE ERR WARN Failed to parse ${file} as json`);
         continue;
       }
       const adjusted = Object.assign({ name }, data);
