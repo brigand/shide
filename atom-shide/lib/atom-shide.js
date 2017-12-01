@@ -2,10 +2,9 @@
 
 import AtomShideView from './atom-shide-view';
 import { CompositeDisposable } from 'atom';
-import getCommands from 'shide/lib/getCommands';
+import getCommands from 'shide/src/getCommands';
 
 export default {
-
   atomShideView: null,
   modalPanel: null,
   subscriptions: null,
