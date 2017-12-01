@@ -19,6 +19,8 @@ async function run() {
 
   if (argCommand === 'invoke-from-ide') {
     const commandName = args[0];
+    const inputArgsJson = args[1];
+
     if (!commandName) {
       die(`Command name is required`);
     }
@@ -28,7 +30,14 @@ async function run() {
       die(`Command name ${commandName} wasn't found in shide files.`);
     }
 
-    await runShideCommand(match);
+    let inputArgs = [];
+    try {
+      inputArgs = JSON.parse(inputArgsJson);
+    } catch (e) {
+      // Do nothing
+    }
+
+    await runShideCommand(match, inputArgs);
     const timer = setTimeout(() => {
       console.error(`SHIDE ERR FATAL Command returned but process remained open for 5 seconds.`);
       process.exit(19);

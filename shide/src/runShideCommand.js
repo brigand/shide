@@ -1,6 +1,6 @@
 const ShideRuntime = require('./runtime');
 
-async function runShideCommand(cmdDesc) {
+async function runShideCommand(cmdDesc, inputArgs = []) {
   const { main } = cmdDesc;
 
   let commandModule = null;
@@ -14,7 +14,9 @@ async function runShideCommand(cmdDesc) {
 
   let runtime = null;
   try {
-    runtime = new ShideRuntime();
+    runtime = new ShideRuntime({
+      inputArgs,
+    });
     runtime.init();
   } catch (e) {
     console.error(`SHIDE ERR FATAL Failed to init js runtime. This is likely a bug in shide.`);

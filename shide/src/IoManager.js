@@ -98,8 +98,13 @@ class IoManager extends EventEmitter {
           // The deferreds are primarily for the shell process because
           // it's making requests to the IDE process and expects
           // responses
-          if (this.deferreds[data.reqId]) {
-            this.deferreds[data.reqId].resolve(response);
+          const deferred = this.deferreds[data.reqId];
+          if (deferred) {
+            if (meta && meta.error) {
+              deferred.reject(response);
+            } else {
+              deferred.resolve(response);
+            }
             delete this.deferreds[data.reqId];
           }
 
