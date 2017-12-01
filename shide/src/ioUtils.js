@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const bs58 = require('bs58');
+const jsonParseWithGoodError = require('./jsonParseWithGoodError');
 
 function randId() {
   const b = crypto.randomBytes(16);
@@ -8,14 +9,17 @@ function randId() {
 
 function makeMessage(reqId, subtype, meta, content) {
   let str = ``;
-  str += `SHIDE MSG START ${subtype} ${reqId}\n`;
-  str += `SHIDE META ${meta ? JSON.stringify(meta) : 'null'}\n`;
-  str += `SHIDE CONTENT START ${id}\n`;
   if (typeof content !== 'string') {
     content = JSON.stringify(content, null, 2);
+    meta = meta || {};
+    meta.isJSON = true;
   }
-  str += content;
-  str += `SHIDE CONTENT END ${id}\n`;
+
+  str += `SHIDE MSG START ${subtype} ${reqId}\n`;
+  str += `SHIDE META ${reqId} ${meta ? JSON.stringify(meta) : 'null'}\n`;
+  str += `SHIDE CONTENT START ${reqId}\n`;
+  str += content + '\n';
+  str += `SHIDE CONTENT END ${reqId}\n`;
   str += `SHIDE MSG END ${subtype} ${reqId}\n`;
   return str;
 }
@@ -26,24 +30,24 @@ function makeTextMessage(reqId, meta, content) {
 
 const lineRegex = [
   {
-    pattern: /^SHIDE MSG START (\w+) (\w+)$/g,
-    map: ([full, subtype, reqId]) => ({ type: 'msg_start', subtype, reqId }),
+    pattern: /^SHIDE MSG START (\w+) (\w+)$/,
+    map: ([, subtype, reqId]) => ({ type: 'msg_start', subtype, reqId }),
   },
   {
-    pattern: /^SHIDE META (.*)$/g,
-    map: ([full, json]) => ({ type: 'meta', value: JSON.parse(json), reqId }),
+    pattern: /^SHIDE META (\w+) (.*)$/,
+    map: ([, reqId, json]) => ({ type: 'meta', value: jsonParseWithGoodError(json), reqId }),
   },
   {
-    pattern: /^SHIDE CONTENT START (\w+)$/g,
-    map: ([full, reqId]) => ({ type: 'content_start', reqId }),
+    pattern: /^SHIDE CONTENT START (\w+)$/,
+    map: ([, reqId]) => ({ type: 'content_start', reqId }),
   },
   {
-    pattern: /^SHIDE CONTENT END (\w+)$/g,
-    map: ([full, reqId]) => ({ type: 'content_end', reqId }),
+    pattern: /^SHIDE CONTENT END (\w+)$/,
+    map: ([, reqId]) => ({ type: 'content_end', reqId }),
   },
   {
-    pattern: /^SHIDE MSG END (\w+) (\w+)$/g,
-    map: ([full, subtype, reqId]) => ({ type: 'msg_end', subtype, reqId }),
+    pattern: /^SHIDE MSG END (\w+) (\w+)$/,
+    map: ([, subtype, reqId]) => ({ type: 'msg_end', subtype, reqId }),
   },
 ];
 
@@ -59,11 +63,13 @@ function parseLine(line) {
     }
   }
 
-  if (/^SHIDE\s/.test(line)) {
-    throw new TypeError(`Attempted to parse line ${JSON.stringify(line)} but no patterns matched`);
+  let other = line.match(/^SHIDE (\w+) (\w+)?(.*)$/);
+  if (other) {
+    const [, logType, level, text] = other;
+    return { type: 'log', logType, level, text: text };
+  } else {
+    return { type: 'log', logType: 'unknown', level: 'unknown', text: line };
   }
-
-  return { type: 'raw', text: line };
 }
 
 module.exports = {

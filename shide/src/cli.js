@@ -29,9 +29,16 @@ async function run() {
     }
 
     await runShideCommand(match);
-    console.log(`SHIDE SUCCESS`);
-    process.exit(0);
+    const timer = setTimeout(() => {
+      console.error(`SHIDE ERR FATAL Command returned but process remained open for 5 seconds.`);
+      process.exit(19);
+    }, 5000);
+    timer.unref();
+    console.log(`SHIDE SUCCESS NORMAL`);
+    return;
   }
 
   die(`Command "${argCommand}" isn't known.`);
 }
+
+run();

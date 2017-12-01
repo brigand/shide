@@ -13,19 +13,21 @@ class ShideRuntime {
   }
 
   async getOpenFiles() {
-    const { body } = await this.io.performRequest('get_open_files', {}, null);
-    return JSON.parse(body);
+    const { body } = await this.io.performRequest('getOpenFiles', {}, null);
+    return body;
   }
 
-  async getCursorPosition() {
-    const { body } = await this.io.performRequest('get_cursor_position', {}, null);
+  async getCursor() {
+    const { body } = await this.io.performRequest('getCursor', {}, null);
     return body;
   }
 
   async getFileContent(name) {
-    const { body } = await this.io.performRequest('get_file_content', {}, {
+    const { body } = await this.io.performRequest('getFileContent', {}, {
       name,
     });
     return body;
   }
 }
+
+module.exports = ShideRuntime;

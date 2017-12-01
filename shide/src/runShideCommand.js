@@ -7,7 +7,7 @@ async function runShideCommand(cmdDesc) {
   try {
     commandModule = require(main);
   } catch (e) {
-    console.error(`SHIDE ERR FATAL Attempted to load "${main}" but it errored`);
+    console.error(`SHIDE ERR FATAL Attempted to load "${main}" but it errored. See the console for the full error.`);
     console.error(e);
     process.exit(19);
   }

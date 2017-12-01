@@ -2,7 +2,8 @@
 
 const EventEmitter = require('events');
 const byline = require('byline');
-const { makeTextMessage, randId, parseLine } = require('./ioUtils');
+const { makeMessage, randId, parseLine } = require('./ioUtils');
+const jsonParseWithGoodError = require('./jsonParseWithGoodError');
 
 class IoManager extends EventEmitter {
   constructor(sOutput, sInput) {
@@ -14,58 +15,76 @@ class IoManager extends EventEmitter {
   }
 
   init() {
-    byline(this.sInput).on('data', (line) => {
-      // Skip blank lines, unless we're parsing a raw text body
-      if ((!line || !line.trim) && (!this.inProgress || !this.inProgress.parsingBody)) {
-        return;
-      }
+    const sInputs = Array.isArray(this.sInput) ? this.sInput : [this.sInput];
 
-      const data = parseLine(line);
-      if (data.type === 'msg_start') {
-        this.inProgress = {
-          reqId: data.reqId,
-          bodyBuffer: null,
-          parsingBody: false,
-        };
-      }
-      const matches = (this.inProgress && this.inProgress.reqId)
-        ? data.reqId === this.inProgress.reqId
-        : false;
-      if (data.type === 'meta' && matches) {
-        this.inProgress.meta = data.value;
-      }
-      if (data.type === 'content_start' && matches) {
-        this.inProgress.bodyBuffer = [];
-        this.inProgress.parsingBody = true;
-      }
+    sInputs.forEach((sInput) => {
+      byline(sInput).on('data', (line) => {
+        line = String(line);
 
-      // When in raw mode, there's no reqId, so we'll just assume it matches
-      if (data.type === 'raw' && this.inProgress.parsingBody) {
-        this.inProgress.bodyBuffer.push(data.text);
-      }
-      // Extra important to check reqId here because there could be a line
-      // in the raw text body that starts with "SHIDE CONTENT END "
-      // but it's nearly impossible for the reqId to also match
-      // Works identically to a HEREDOC, but has enough randomness to never
-      // match by mistake.
-      if (data.type === 'content_end' this.inProgress.parsingBody && && matches) {
-        this.inProgress.parsingBody = false;
-      }
+        // Skip blank lines, unless we're parsing a raw text body
+        if ((!line || !line.trim()) && (!this.inProgress || !this.inProgress.parsingBody)) {
+          return;
+        }
 
-      // At the end of the message, notify the caller of this request if any
-      if (data.type === 'msg_end' && matches) {
-        if (this.deferreds[data.reqId]) {
-          const bodyString = this.inProgress.bodyBuffer
-            ? this.inProgress.bodyBuffer.join('\n')
+        const data = parseLine(line);
+        const matches = !!this.inProgress && !!this.inProgress.reqId;
+
+        if (data.type === 'meta' && matches) {
+          this.inProgress.meta = data.value;
+          return;
+        }
+        if (data.type === 'content_start' && matches) {
+          this.inProgress.bodyBuffer = [];
+          this.inProgress.parsingBody = true;
+          return;
+        }
+
+        // When in raw mode, there's no reqId, so we'll just assume it matches
+        if (this.inProgress && this.inProgress.parsingBody && (!data || data.type !== 'content_end')) {
+          this.inProgress.bodyBuffer.push(line);
+          return;
+        }
+
+        // Extra important to check reqId here because there could be a line
+        // in the raw text body that starts with "SHIDE CONTENT END "
+        // but it's nearly impossible for the reqId to also match
+        // Works identically to a HEREDOC, but has enough randomness to never
+        // match by mistake.
+        if (this.inProgress && data.type === 'content_end' && this.inProgress.parsingBody && matches) {
+          this.inProgress.parsingBody = false;
+          return;
+        }
+
+        if (data.type === 'msg_start') {
+          this.inProgress = {
+            reqId: data.reqId,
+            subtype: data.subtype,
+            bodyBuffer: null,
+            parsingBody: false,
+          };
+          return;
+        }
+
+        if (!this.inProgress && data.type === 'log') {
+          this.emit('log', data);
+          return;
+        }
+
+        // At the end of the message, notify the caller of this request if any
+        if (data.type === 'msg_end' && matches) {
+          const { reqId, subtype, meta, bodyBuffer } = this.inProgress;
+          const bodyString = bodyBuffer
+            ? bodyBuffer.join('\n')
             : null;
-          const body = meta && meta.isJSON
-            ? JSON.parse(bodyString)
+          const body = meta && meta.isJSON && bodyString
+            ? jsonParseWithGoodError(bodyString)
             : bodyString;
 
           const response = {
-            reqId: this.inProgress.reqId,
+            reqId,
             body,
-            meta: this.inProgress.meta || null,
+            subtype,
+            meta: meta || null,
           };
 
           // The message event is primarily for the IDE process
@@ -79,13 +98,15 @@ class IoManager extends EventEmitter {
           // The deferreds are primarily for the shell process because
           // it's making requests to the IDE process and expects
           // responses
-          this.deferreds[data.reqId].resolve(response);
-          delete this.deferreds[data.reqId];
+          if (this.deferreds[data.reqId]) {
+            this.deferreds[data.reqId].resolve(response);
+            delete this.deferreds[data.reqId];
+          }
 
           // Clear this out, mostly for memory reasons.
           this.inProgress = null;
         }
-      }
+      });
     });
   }
 

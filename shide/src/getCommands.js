@@ -1,14 +1,14 @@
 'use babel';
-import path from 'path';
-import fs from 'fs';
-import promisify from 'util.promisify';
+const path = require('path');
+const fs = require('fs');
+const promisify = require('util.promisify');
 
 const readFile = promisify(fs.readFile);
 const readdir = promisify(fs.readdir);
 
 async function getCommands(workDir) {
   const resolve = (...rest) => {
-    return path.join(workDir, ...rest);
+    return path.resolve(workDir, ...rest);
   };
 
   let shideDir = resolve('scripts/shide');
@@ -21,6 +21,7 @@ async function getCommands(workDir) {
       didSpecify = true;
     }
   } catch (e) {
+    // Do nothing
   }
 
   let files = [];
@@ -28,7 +29,7 @@ async function getCommands(workDir) {
     files = await readdir(shideDir);
   } catch (e) {
     if (didSpecify) {
-      atom.notifications.addWarning(`Shide: Attempted to load shide files in "${shideDir}", specified in package.json, but not found.`);
+      console.error(`SHIDE ERR WARN: Attempted to load shide files in "${shideDir}", specified in package.json, but not found.`);
     }
     return {};
   }
@@ -60,4 +61,4 @@ async function getCommands(workDir) {
   return mapping;
 }
 
-export default getCommands;
+module.exports = getCommands;
