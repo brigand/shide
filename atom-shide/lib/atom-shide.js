@@ -1,22 +1,31 @@
 'use babel';
 
+import cp from 'child_process';
 import AtomShideView from './atom-shide-view';
 import { CompositeDisposable } from 'atom';
-import getCommands from 'shide/src/getCommands';
-import IoManager from 'shide/src/IoManager';
-import getNodeExecutable from 'shide/src/getNodeExecutable';
-import cp from 'child_process';
+
+// We will import these relative to the working directory for the project
+// when atom-shide is activated
+let getCommands;
+let IoManager;
+let getNodeExecutable;
 
 export default {
   atomShideView: null,
   modalPanel: null,
   subscriptions: null,
+  processes: [],
 
   getWorkDir() {
     return atom.project.getPaths()[0];
   },
 
   activate(state) {
+    const wd = this.getWorkDir();
+    getCommands = require(`${wd}/node_modules/shide/src/getCommands`);
+    IoManager = require(`${wd}/node_modules/shide/src/IoManager`);
+    getNodeExecutable = require(`${wd}/node_modules/shide/src/getNodeExecutable`);
+
     this.atomShideView = new AtomShideView(state.atomShideViewState);
     this.modalPanel = atom.workspace.addModalPanel({
       item: this.atomShideView.getElement(),
@@ -33,6 +42,7 @@ export default {
   },
 
   async init() {
+    this.killAll();
     if (this.extraActions) this.extraActions.dispose();
 
     this.extraActions = new CompositeDisposable();
@@ -79,6 +89,16 @@ export default {
     });
   },
 
+  killAll() {
+    // Not sure if the slice/clone is required, but we handle the
+    // 'exit' event on each process by removing it from the array
+    this.processes.slice().forEach((proc) => {
+      console.warn(`Killed process for command "${proc.shideCommandName}"`);
+      proc.kill();
+    });
+    this.processes = [];
+  },
+
   async perform(command, inputArgs = []) {
     // Do our best to find node 8.x
     const nodeExecutable = await getNodeExecutable((errMessage) => {
@@ -92,6 +112,12 @@ export default {
     const c = cp.spawn(nodeExecutable, args, {
       cwd: this.getWorkDir(),
       stdio: 'pipe',
+    });
+    c.shideCommandName = command.displayName;
+    this.processes.push(c);
+    c.on('exit', () => {
+      const index = this.processes.indexOf(c);
+      if (index !== -1) this.processes.splice(index, 1);
     });
     c.stderr.on('data', (msg) => {
       console.error(String(msg));
