@@ -4,17 +4,17 @@ const EventEmitter = require('events');
 const byline = require('byline');
 const { makeTextMessage, randId, parseLine } = require('./ioUtils');
 
-class IoToEditor extends EventEmitter {
-  constructor(sToEditor, sFromEditor) {
+class IoManager extends EventEmitter {
+  constructor(sOutput, sInput) {
     super();
-    this.sToEditor = sToEditor;
-    this.sFromEditor = sFromEditor;
+    this.sOutput = sOutput;
+    this.sInput = sInput;
     this.deferreds = {};
     this.inProgress = null;
   }
 
   init() {
-    byline(this.sFromEditor).on('data', (line) => {
+    byline(this.sInput).on('data', (line) => {
       // Skip blank lines, unless we're parsing a raw text body
       if ((!line || !line.trim) && (!this.inProgress || !this.inProgress.parsingBody)) {
         return;
@@ -55,22 +55,41 @@ class IoToEditor extends EventEmitter {
       // At the end of the message, notify the caller of this request if any
       if (data.type === 'msg_end' && matches) {
         if (this.deferreds[data.reqId]) {
+          const bodyString = this.inProgress.bodyBuffer
+            ? this.inProgress.bodyBuffer.join('\n')
+            : null;
+          const body = meta && meta.isJSON
+            ? JSON.parse(bodyString)
+            : bodyString;
+
           const response = {
             reqId: this.inProgress.reqId,
-            body: this.inProgress.bodyBuffer
-              ? this.inProgress.bodyBuffer.join('\n')
-              : null,
+            body,
             meta: this.inProgress.meta || null,
           };
 
+          // The message event is primarily for the IDE process
+          // since it's receiving commands
+          const reply = (opts, body) => {
+            this.sendReply(response.reqId, opts, body);
+          };
+          const messageEvent = Object.assign({}, response, { reply });
+          this.emit('message', messageEvent);
+
+          // The deferreds are primarily for the shell process because
+          // it's making requests to the IDE process and expects
+          // responses
           this.deferreds[data.reqId].resolve(response);
-          delete(this.deferreds[data.reqId]);
+          delete this.deferreds[data.reqId];
+
+          // Clear this out, mostly for memory reasons.
+          this.inProgress = null;
         }
       }
     });
   }
 
-  performRequest(type, opts = {}, body = {}) {
+  performRequest(type, opts = {}, body = null) {
     const reqId = randId();
     const deferred = {};
     deferred.promise = new Promise((resolve, reject) => {
@@ -80,8 +99,20 @@ class IoToEditor extends EventEmitter {
     this.deferreds[reqId] = deferred;
 
     const msg = makeMessage(reqId, type, opts, body);
-    this.sToEditor.write(msg + '\n');
+    this.sOutput.write(msg + '\n');
 
     return deferred.promise;
   }
+
+  sendReply(reqId, opts = {}, body = null) {
+    if (body && typeof body === 'object') {
+      body = JSON.stringify(body, null, 2);
+      opts.isJSON = true;
+    }
+
+    const msg = makeMessage(reqId, 'reply', opts, body);
+    this.sOutput.write(msg + '\n');
+  }
 }
+
+module.exports = IoManager;
