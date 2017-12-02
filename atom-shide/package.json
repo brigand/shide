@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "description": "A short description of your package",
   "keywords": [],
-  "repository": "https://github.com/atom/atom-shide",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atom/atom-shide.git"
+  },
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
@@ -15,5 +18,16 @@
   "shide": "example-shide",
   "devDependencies": {
     "eslint": "^4.12.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/atom/atom-shide/issues"
+  },
+  "homepage": "https://github.com/atom/atom-shide#readme",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Frankie Bagnardi <f.bagnardi@gmail.com>"
 }

@@ -1,7 +1,6 @@
 {
   "name": "shide",
   "version": "0.2.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +17,6 @@
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "eslint": "^4.12.1"
-  }
+  },
+  "description": ""
 }

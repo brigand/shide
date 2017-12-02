@@ -21,11 +21,6 @@ export default {
   },
 
   activate(state) {
-    const wd = this.getWorkDir();
-    getCommands = require(`${wd}/node_modules/shide/src/getCommands`);
-    IoManager = require(`${wd}/node_modules/shide/src/IoManager`);
-    getNodeExecutable = require(`${wd}/node_modules/shide/src/getNodeExecutable`);
-
     this.atomShideView = new AtomShideView(state.atomShideViewState);
     this.modalPanel = atom.workspace.addModalPanel({
       item: this.atomShideView.getElement(),
@@ -42,6 +37,16 @@ export default {
   },
 
   async init() {
+    const wd = this.getWorkDir();
+    try {
+      getCommands = require(`${wd}/node_modules/shide/src/getCommands`);
+      IoManager = require(`${wd}/node_modules/shide/src/IoManager`);
+      getNodeExecutable = require(`${wd}/node_modules/shide/src/getNodeExecutable`);
+    } catch (e) {
+      console.warn(`Shide isn't installed for this project`, e.message);
+      return;
+    }
+
     this.killAll();
     if (this.extraActions) this.extraActions.dispose();
 
