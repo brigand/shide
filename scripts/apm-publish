@@ -1,0 +1,23 @@
+#!/bin/bash
+
+cd atom-shide
+
+mkdir -p ../../atom-shide-prepublish
+rm -rf ../../atom-shide-prepublish/*
+
+for f in *; do
+  echo $f
+  if [[ $f != 'node_modules' ]]; then
+    cp -R $f ../../atom-shide-prepublish/
+  fi
+done
+
+cd ../../atom-shide-prepublish
+
+git add .
+git commit -m 'scripts/apm-publish ran'
+git push -u origin master
+
+version=${1:-minor}
+apm publish $version
+

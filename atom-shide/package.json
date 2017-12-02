@@ -6,7 +6,7 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atom/atom-shide.git"
+    "url": "https://github.com/brigand/atom-shide-prepublish.git"
   },
   "license": "MIT",
   "engines": {
