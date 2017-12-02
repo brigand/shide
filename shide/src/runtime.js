@@ -33,6 +33,21 @@ class ShideRuntime {
     return body;
   }
 
+  async saveFile(opts = {}) {
+    assertAbsolutePath(opts.path);
+    const { body } = await this.io.performRequest('saveFile', {}, {
+      path: opts.path,
+    });
+    return body;
+  }
+
+  async closeAllFiles(opts = {}) {
+    const { body } = await this.io.performRequest('closeAllFiles', {}, {
+      noSave: opts.noSave,
+    });
+    return body;
+  }
+
   async getCursor() {
     const { body } = await this.io.performRequest('getCursor', {}, null);
     return body;

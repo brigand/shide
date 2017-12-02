@@ -151,6 +151,42 @@ export default {
         return;
       }
 
+      if (subtype === 'closeAllFiles') {
+        let closed = [];
+        atom.workspace.getPanes()
+          .forEach((pane) => {
+            pane.getItems().forEach(async (item) => {
+            if (item && item.getPath) {
+              closed.push(item.getPath());
+              if (!body.noSave) {
+                await pane.saveItem(item);
+              }
+              pane.destroyItem(item);
+            }
+          });
+        });
+        reply({}, { success: true, closed });
+        return;
+      }
+
+      if (subtype === 'saveFile') {
+        const match = atom.workspace.getPaneItems()
+          .find((x) => {
+            if (x && x.getPath) {
+              const p = x.getPath();
+              if (p === body.path) {
+                return true;
+              }
+            }
+            return false;
+          });
+        if (match) {
+          match.save();
+          return reply({}, { success: true });
+        }
+        reply({ error: true }, { type: 'not_found', message: `No active editor found for path "${body.path}"`});
+      }
+
       // Used to get consistent warnings for there not being an active text editor
       // Not sure exactly when this happens
       function ensureGetActiveTextEditor(errorOnFail = false) {
@@ -262,7 +298,7 @@ export default {
       if (subtype === 'openFile') {
         await atom.workspace.open(body.path, {
           initialLine: body.cursor ? body.cursor.row : 0,
-          initialColumn: body.cursor ? body.cursor.column : 0,
+          initialColumn: body.cursor ? body.cursor.col : 0,
           activatePane: body.inBackground ? false : true,
           pending: false,
           searchAllPanes: body.allowDuplicate ? false : true,
