@@ -6,6 +6,11 @@ const IoManager = require('./IoManager');
 const readFile = pify(fs.readFile);
 const writeFile = pify(fs.writeFile);
 
+function assertAbsolutePath(path) {
+  if (!path) throw new TypeError(`path is required`);
+  if (path[0] !== '/') throw new TypeError(`path must be absolute`);
+}
+
 class ShideRuntime {
   constructor(opts = {}) {
     this.args = opts.inputArgs || [];
@@ -22,12 +27,19 @@ class ShideRuntime {
     return body;
   }
 
+  async openFile(opts) {
+    assertAbsolutePath(opts.path);
+    const { body } = await this.io.performRequest('openFile', {}, opts);
+    return body;
+  }
+
   async getCursor() {
     const { body } = await this.io.performRequest('getCursor', {}, null);
     return body;
   }
 
   async getFileContent(path) {
+    assertAbsolutePath(path);
     try {
       const { body } = await this.io.performRequest('getFileContent', {}, {
         path,
@@ -43,6 +55,7 @@ class ShideRuntime {
   }
 
   async setFileContent(path, text, opts = {}) {
+    assertAbsolutePath(path);
     try {
       const { body } = await this.io.performRequest('setFileContent', {}, {
         path,
@@ -59,6 +72,12 @@ class ShideRuntime {
     }
   }
 
+  /*
+    Gets metadata about the current active editor file. Throws if no active
+    file.
+
+    @returns { path: string }
+  */
   async getActiveFile() {
     const { body } = await this.io.performRequest('getActiveFile', {}, null);
     return body;

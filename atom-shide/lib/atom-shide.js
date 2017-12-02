@@ -156,7 +156,7 @@ export default {
       function ensureGetActiveTextEditor(errorOnFail = false) {
         const te = atom.workspace.getActiveTextEditor() || null;
         if (!te) {
-          atom.workspace.addWarning(`Shide ${command.displayName} attempted to use '${subtype}' but no editor is focused`);
+          atom.notifications.addWarning(`Shide ${command.displayName} attempted to use '${subtype}' but no editor is focused`);
           if (errorOnFail) {
             reply({ error: true }, { message: `No editor focused`, type: 'no_editor' });
           }
@@ -173,6 +173,7 @@ export default {
         const te = ensureGetActiveTextEditor(true);
         if (!te) return;
         reply({}, { path: te.getPath() });
+        return;
       }
 
       if (subtype === 'getCursor') {
@@ -180,13 +181,59 @@ export default {
         if (!te) return;
 
         const range = te.getSelectedBufferRange();
-        const text = te.getSelectedText();
+        const selectedText = te.getSelectedText();
         const cursor = te.getCursorBufferPosition();
-        reply({}, {
-          cursor,
-          range,
-          text,
-        });
+        const text = te.getText();
+        const res = {
+          row: cursor.row,
+          col: cursor.column,
+          index: null,
+          selection: {
+            start: {
+              row: range.start.row,
+              col: range.start.column,
+              index: null,
+            },
+            end: {
+              row: range.end.row,
+              col: range.end.column,
+              index: null,
+            },
+            text: selectedText || null,
+          },
+        };
+        let currRow = 0;
+        let currCol = 0;
+        let solved = 0;
+        for (let i = 0; i < text.length + 1; i += 1) {
+          const char = text[i];
+
+          if (currRow === res.row && currCol === res.col) {
+            solved += 1;
+            res.index = i;
+          }
+          if (currRow === res.selection.start.row && currCol === res.selection.start.col) {
+            solved += 1;
+            res.selection.start.index = i;
+          }
+          if (currRow === res.selection.end.row && currCol === res.selection.end.col) {
+            solved += 1;
+            res.selection.end.index = i;
+          }
+
+          // found all of the offsets? we can stop now
+          if (solved === 3) {
+            break;
+          }
+
+          if (char === '\n') {
+            currCol = 0;
+            currRow += 1;
+          } else {
+            currCol += 1;
+          }
+        }
+        reply({}, res);
         return;
       }
 
@@ -212,6 +259,18 @@ export default {
         return te;
       }
 
+      if (subtype === 'openFile') {
+        await atom.workspace.open(body.path, {
+          initialLine: body.cursor ? body.cursor.row : 0,
+          initialColumn: body.cursor ? body.cursor.column : 0,
+          activatePane: body.inBackground ? false : true,
+          pending: false,
+          searchAllPanes: body.allowDuplicate ? false : true,
+        });
+        reply({}, { success: true });
+        return;
+      }
+
       if (subtype === 'getFileContent') {
         const te = await getTeForOptionalPath(body.path, true);
         if (!te) return;
@@ -231,7 +290,7 @@ export default {
 
       // Could be caused by a mismatch in atom-shide and shide package versions
       // or a bug in either package
-      atom.workspace.addWarning(`Shide ${command.displayName} attempted to use action "${subtype}" which isn't supported by atom-shide`);
+      atom.notifications.addWarning(`Shide ${command.displayName} attempted to use action "${subtype}" which isn't supported by atom-shide`);
 
       reply({ error: true }, { message: `Unsupported operation`, type: 'unsupported_command' });
     });
