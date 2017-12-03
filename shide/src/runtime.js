@@ -3,17 +3,20 @@ const fs = require('fs');
 const pify = require('util.promisify');
 const IoManager = require('./IoManager');
 
+const BaseGeneratedRuntime = require('./generated/runtime.gen.js');
+
 const readFile = pify(fs.readFile);
 const writeFile = pify(fs.writeFile);
 
-function assertAbsolutePath(path) {
-  if (!path) throw new TypeError(`path is required`);
-  if (path[0] !== '/') throw new TypeError(`path must be absolute`);
-}
+// function assertAbsolutePath(path) {
+//   if (!path) throw new TypeError(`path is required`);
+//   if (path[0] !== '/') throw new TypeError(`path must be absolute`);
+// }
 
-class ShideRuntime {
+class ShideRuntime extends BaseGeneratedRuntime {
   constructor(opts = {}) {
-    this.args = opts.inputArgs || [];
+    super();
+    this.args = opts.inputArgs || {};
   }
 
   init() {
@@ -22,65 +25,55 @@ class ShideRuntime {
     this.io.init();
   }
 
-  async getOpenFiles() {
-    const { body } = await this.io.performRequest('getOpenFiles', {}, null);
-    return body;
-  }
+  // async getOpenFiles() {
+  //   const { body } = await this.io.performRequest('getOpenFiles', {}, null);
+  //   return body;
+  // }
+  //
+  // async openFile(opts) {
+  //   assertAbsolutePath(opts.path);
+  //   const { body } = await this.io.performRequest('openFile', {}, opts);
+  //   return body;
+  // }
+  //
+  // async saveFile(opts = {}) {
+  //   assertAbsolutePath(opts.path);
+  //   const { body } = await this.io.performRequest('saveFile', {}, {
+  //     path: opts.path,
+  //   });
+  //   return body;
+  // }
+  //
+  // async closeAllFiles(opts = {}) {
+  //   const { body } = await this.io.performRequest('closeAllFiles', {}, {
+  //     noSave: opts.noSave,
+  //   });
+  //   return body;
+  // }
+  //
+  // async getCursor() {
+  //   const { body } = await this.io.performRequest('getCursor', {}, null);
+  //   return body;
+  // }
 
-  async openFile(opts) {
-    assertAbsolutePath(opts.path);
-    const { body } = await this.io.performRequest('openFile', {}, opts);
-    return body;
-  }
-
-  async saveFile(opts = {}) {
-    assertAbsolutePath(opts.path);
-    const { body } = await this.io.performRequest('saveFile', {}, {
-      path: opts.path,
-    });
-    return body;
-  }
-
-  async closeAllFiles(opts = {}) {
-    const { body } = await this.io.performRequest('closeAllFiles', {}, {
-      noSave: opts.noSave,
-    });
-    return body;
-  }
-
-  async getCursor() {
-    const { body } = await this.io.performRequest('getCursor', {}, null);
-    return body;
-  }
-
-  async getFileContent(path) {
-    assertAbsolutePath(path);
+  async getFileContent(opts) {
     try {
-      const { body } = await this.io.performRequest('getFileContent', {}, {
-        path,
-      });
-      return body;
+      return await super.getFileContent(opts);
     } catch (e) {
-      if (path && e.body && e.body.type === 'no_matching_editor') {
-        const text = await readFile(path, 'utf-8');
+      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
+        const text = await readFile(opts.path, 'utf-8');
         return { text };
       }
       throw e;
     }
   }
 
-  async setFileContent(path, text, opts = {}) {
-    assertAbsolutePath(path);
+  async setFileContent(opts) {
     try {
-      const { body } = await this.io.performRequest('setFileContent', {}, {
-        path,
-        text,
-        opts,
-      });
-      return body;
+      return await super.setFileContent(opts);
     } catch (e) {
-      if (path && e.body && e.body.type === 'no_matching_editor') {
-        await writeFile(path, text);
+      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
+        await writeFile(opts.path, opts.text);
         return null;
       }
       throw e;
@@ -93,10 +86,10 @@ class ShideRuntime {
 
     @returns { path: string }
   */
-  async getActiveFile() {
-    const { body } = await this.io.performRequest('getActiveFile', {}, null);
-    return body;
-  }
+  // async getActiveFile() {
+  //   const { body } = await this.io.performRequest('getActiveFile', {}, null);
+  //   return body;
+  // }
 }
 
 module.exports = ShideRuntime;
