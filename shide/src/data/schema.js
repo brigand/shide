@@ -49,6 +49,37 @@ const CURSOR = {
   },
 };
 
+const CURSOR_INPUT = {
+  type: 'object',
+  properties: {
+    row: optional({ type: 'number' }),
+    col: optional({ type: 'number' }),
+    index: optional({ type: 'number' }),
+    selection: optional({
+      type: 'object',
+      properties: {
+        text: optional({ type: 'string' }),
+        start: optional({
+          type: 'object',
+          properties: {
+            row: optional({ type: 'number' }),
+            col: optional({ type: 'number' }),
+            index: optional({ type: 'number' }),
+          },
+        }),
+        end: optional({
+          type: 'object',
+          properties: {
+            row: optional({ type: 'number' }),
+            col: optional({ type: 'number' }),
+            index: optional({ type: 'number' }),
+          },
+        }),
+      },
+    }),
+  },
+};
+
 const operations = [
   {
     name: 'getOpenFiles',
@@ -106,6 +137,12 @@ const operations = [
     output: CURSOR,
   },
   {
+    name: 'setCursor',
+    hasEffects: false,
+    input: CURSOR_INPUT,
+    output: SUCCESS,
+  },
+  {
     name: 'getFileContent',
     hasEffects: false,
     input: {
@@ -137,6 +174,7 @@ const operations = [
             save: optional({ type: 'boolean' }),
           },
         }),
+        cursor: optional(CURSOR_INPUT),
       },
     },
     output: SUCCESS,

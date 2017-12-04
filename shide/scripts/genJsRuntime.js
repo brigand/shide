@@ -65,31 +65,31 @@ function makeAssertions(item, parentPath, indentCount) {
 
   if (item.type === 'string' && !item.optional) {
     results.push(indent + makeAssert('equal', `typeof ${base}`, `'string'`,
-      `Expected ${base} to be a string ${insp}`,
+      `Expected ${base} to be a string ${insp}`
     ));
   }
   if (item.type === 'number' && !item.optional) {
     results.push(indent + makeAssert('equal', `typeof ${base}`, `'number'`,
-      `Expected ${base} to be a number ${insp}`,
+      `Expected ${base} to be a number ${insp}`
     ));
   }
   if (item.type === 'array' && !item.optional) {
     results.push(indent + makeAssert('equal', `Array.isArray(${base})`, `true`,
-      `Expected ${base} to be an array ${insp}`,
+      `Expected ${base} to be an array ${insp}`
     ));
   }
   if (item.type === 'boolean' && !item.optional) {
     results.push(indent + makeAssert('equal', `typeof ${base}`, `'boolean'`,
-      `Expected ${base} to be a boolean ${insp}`,
+      `Expected ${base} to be a boolean ${insp}`
     ));
   }
 
   if (item.type === 'object') {
     const first = makeAssert('equal', `!!${base}`, `true`,
-      `Expected ${base} to be an object ${insp}`,
+      `Expected ${base} to be an object ${insp}`
     );
     const second = makeAssert('equal', `typeof ${base}`, `'object'`,
-      `Expected ${base} to be an object ${insp}`,
+      `Expected ${base} to be an object ${insp}`
     );
 
     if (!item.optional) {
@@ -98,7 +98,7 @@ function makeAssertions(item, parentPath, indentCount) {
       Object.keys(item.properties).map((key) => {
         const sub = item.properties[key];
         results.push(
-          ...makeAssertions(sub, parentPath.concat([key]), indentCount),
+          ...makeAssertions(sub, parentPath.concat([key]), indentCount)
         );
       });
     } else {
@@ -106,7 +106,7 @@ function makeAssertions(item, parentPath, indentCount) {
       results.push(`${indent}  ${second}`);
       Object.keys(item.properties).map((key) => {
         const sub = item.properties[key];
-        results.push(...makeAssertions(sub, parentPath.concat([key]), indentCount + 1).join('\n'));
+        results.push(...makeAssertions(sub, parentPath.concat([key]), indentCount + 1));
       });
       results.push(`${indent}}`);
     }

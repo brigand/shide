@@ -188,6 +188,39 @@ export default {
         }
       }
 
+      async function applyCursor(path, cursor, errorOnFail = false) {
+        const te = await getTeForOptionalPath(path, errorOnFail, true);
+        if (!te) return;
+        const pane = getPaneByPath(path);
+        if (pane) {
+          pane.activateItem(te);
+        } else {
+          return;
+        }
+        if (cursor.row != null && cursor.col != null) {
+          te.setCursorBufferPosition([cursor.row, cursor.col]);
+        } else if (cursor.index != null) {
+          let row = 0;
+          let col = 0;
+          const text = te.getText();
+          for (let i = 0; i < text.length; i += 1) {
+            const char = text[i];
+
+            if (i === cursor.index) {
+              te.setCursorBufferPosition([row, col]);
+              return;
+            }
+
+            if (char === '\n') {
+              row += 1;
+              col = 0;
+            } else {
+              col += 1;
+            }
+          }
+        }
+      }
+
       try {
         // Handle the various commands. Sync with shide/src/runtime.js
         // TODO: refactor these to a separate file?
@@ -351,9 +384,19 @@ export default {
           if (body.opts && body.opts.save) {
             te.save();
           }
+          if (body.cursor) {
+            await applyCursor(body.path, body.cursor, false);
+          }
           reply({}, { success: true });
           return;
         }
+
+        if (subtype === 'setCursor') {
+          await applyCursor(body.path, body.cursor, false);
+          reply({}, { success: true });
+          return;
+        }
+
 
         // Could be caused by a mismatch in atom-shide and shide package versions
         // or a bug in either package

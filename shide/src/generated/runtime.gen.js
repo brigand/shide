@@ -121,6 +121,42 @@ class BaseGeneratedRuntime {
     return res.body;
   }
 
+  async setCursor(input) {
+    try { assert.equal(!!input, true) } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input, 'object') } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    if (input.selection) {
+      try { assert.equal(typeof input.selection, 'object') } catch (e) {
+      throw new Error(`Expected input.selection to be an object but got ${inspect(input.selection)}`) }
+      if (input.selection.start) {
+        try { assert.equal(typeof input.selection.start, 'object') } catch (e) {
+        throw new Error(`Expected input.selection.start to be an object but got ${inspect(input.selection.start)}`) }
+      }
+      if (input.selection.end) {
+        try { assert.equal(typeof input.selection.end, 'object') } catch (e) {
+        throw new Error(`Expected input.selection.end to be an object but got ${inspect(input.selection.end)}`) }
+      }
+    }
+
+
+    const res = await this.io.performRequest('setCursor', {}, {
+        row: input.row,
+        col: input.col,
+        index: input.index,
+        selection: input.selection,
+    });
+
+    try { assert.equal(!!res.body, true) } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+    try { assert.equal(typeof res.body, 'object') } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+    try { assert.equal(typeof res.body.success, 'boolean') } catch (e) {
+      throw new Error(`Expected res.body.success to be a boolean but got ${inspect(res.body.success)}`) }
+
+    return res.body;
+  }
+
   async getFileContent(input) {
     try { assert.equal(!!input, true) } catch (e) {
       throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
@@ -157,12 +193,29 @@ class BaseGeneratedRuntime {
       try { assert.equal(typeof input.opts, 'object') } catch (e) {
       throw new Error(`Expected input.opts to be an object but got ${inspect(input.opts)}`) }
     }
+    if (input.cursor) {
+      try { assert.equal(typeof input.cursor, 'object') } catch (e) {
+      throw new Error(`Expected input.cursor to be an object but got ${inspect(input.cursor)}`) }
+      if (input.cursor.selection) {
+        try { assert.equal(typeof input.cursor.selection, 'object') } catch (e) {
+        throw new Error(`Expected input.cursor.selection to be an object but got ${inspect(input.cursor.selection)}`) }
+        if (input.cursor.selection.start) {
+          try { assert.equal(typeof input.cursor.selection.start, 'object') } catch (e) {
+          throw new Error(`Expected input.cursor.selection.start to be an object but got ${inspect(input.cursor.selection.start)}`) }
+        }
+        if (input.cursor.selection.end) {
+          try { assert.equal(typeof input.cursor.selection.end, 'object') } catch (e) {
+          throw new Error(`Expected input.cursor.selection.end to be an object but got ${inspect(input.cursor.selection.end)}`) }
+        }
+      }
+    }
 
 
     const res = await this.io.performRequest('setFileContent', {}, {
         path: input.path,
         text: input.text,
         opts: input.opts,
+        cursor: input.cursor,
     });
 
     try { assert.equal(!!res.body, true) } catch (e) {
