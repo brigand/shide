@@ -344,8 +344,6 @@ export default {
 
         if (subtype === 'openFile') {
           const te = await atom.workspace.open(body.path, {
-            initialLine: body.cursor ? body.cursor.row : 0,
-            initialColumn: body.cursor ? body.cursor.col : 0,
             // activatePane: body.inBackground ? false : true,
             pending: false,
             searchAllPanes: body.allowDuplicate ? false : true,
@@ -357,15 +355,16 @@ export default {
           //   }, 200);
           // }
           if (body.cursor) {
-            te.scrollToBufferPosition({
-              row: 10000,
-              col: 0,
-            });
-            te.scrollToBufferPosition({
-              // FIXME: how do we set the first line in the editor?
-              row: body.cursor.row + 25,
-              col: body.cursor.col || 0,
-            });
+            await applyCursor(body.path, body.cursor, true);
+            // te.scrollToBufferPosition({
+            //   row: 10000,
+            //   col: 0,
+            // });
+            // te.scrollToBufferPosition({
+            //   // FIXME: how do we set the first line in the editor?
+            //   row: body.cursor.row + 25,
+            //   col: body.cursor.col || 0,
+            // });
           }
           reply({}, { success: true });
           return;

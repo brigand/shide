@@ -17,10 +17,27 @@ class BaseGeneratedRuntime {
       throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
     try { assert.equal(typeof input.path, 'string') } catch (e) {
       throw new Error(`Expected input.path to be a string but got ${inspect(input.path)}`) }
+    if (input.cursor) {
+      try { assert.equal(typeof input.cursor, 'object') } catch (e) {
+      throw new Error(`Expected input.cursor to be an object but got ${inspect(input.cursor)}`) }
+      if (input.cursor.selection) {
+        try { assert.equal(typeof input.cursor.selection, 'object') } catch (e) {
+        throw new Error(`Expected input.cursor.selection to be an object but got ${inspect(input.cursor.selection)}`) }
+        if (input.cursor.selection.start) {
+          try { assert.equal(typeof input.cursor.selection.start, 'object') } catch (e) {
+          throw new Error(`Expected input.cursor.selection.start to be an object but got ${inspect(input.cursor.selection.start)}`) }
+        }
+        if (input.cursor.selection.end) {
+          try { assert.equal(typeof input.cursor.selection.end, 'object') } catch (e) {
+          throw new Error(`Expected input.cursor.selection.end to be an object but got ${inspect(input.cursor.selection.end)}`) }
+        }
+      }
+    }
 
 
     const res = await this.io.performRequest('openFile', {}, {
         path: input.path,
+        cursor: input.cursor,
     });
 
     try { assert.equal(!!res.body, true) } catch (e) {

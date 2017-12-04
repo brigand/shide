@@ -102,6 +102,7 @@ const operations = [
       type: 'object',
       properties: {
         path: ABSOLUTE_PATH,
+        cursor: optional(CURSOR_INPUT),
       },
     },
     output: SUCCESS,
