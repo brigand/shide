@@ -348,7 +348,7 @@ export default {
           const te = await getTeForOptionalPath(body.path, true);
           if (!te) return;
           te.setText(body.text);
-          if (body.opts.save) {
+          if (body.opts && body.opts.save) {
             te.save();
           }
           reply({}, { success: true });

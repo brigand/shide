@@ -13,7 +13,8 @@
     "util.promisify": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^4.12.1"
+    "eslint": "^4.12.1",
+    "outdent": "^0.4.1"
   },
   "description": ""
 }
