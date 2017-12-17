@@ -190,6 +190,22 @@ const operations = [
         path: ABSOLUTE_PATH,
       },
     },
+  },
+  {
+    name: 'prompt',
+    hasEffects: false,
+    input: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+      },
+    },
+    output: {
+      type: 'object',
+      properties: {
+        response: { type: 'string' },
+      },
+    },
   }
 ];
 

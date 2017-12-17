@@ -25,6 +25,31 @@ class ShideRuntime extends BaseGeneratedRuntime {
     this.io.init();
   }
 
+  async getFileContent(opts) {
+    try {
+      return await super.getFileContent(opts);
+    } catch (e) {
+      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
+        const text = await readFile(opts.path, 'utf-8');
+        return { text };
+      }
+      throw e;
+    }
+  }
+
+  async setFileContent(opts) {
+    try {
+      return await super.setFileContent(opts);
+    } catch (e) {
+      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
+        await writeFile(opts.path, opts.text);
+        return null;
+      }
+      throw e;
+    }
+  }
+
+  // Commented out functions are inherited from BaseGeneratedRuntime
   // async getOpenFiles() {
   //   const { body } = await this.io.performRequest('getOpenFiles', {}, null);
   //   return body;
@@ -55,30 +80,13 @@ class ShideRuntime extends BaseGeneratedRuntime {
   //   const { body } = await this.io.performRequest('getCursor', {}, null);
   //   return body;
   // }
-
-  async getFileContent(opts) {
-    try {
-      return await super.getFileContent(opts);
-    } catch (e) {
-      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
-        const text = await readFile(opts.path, 'utf-8');
-        return { text };
-      }
-      throw e;
-    }
-  }
-
-  async setFileContent(opts) {
-    try {
-      return await super.setFileContent(opts);
-    } catch (e) {
-      if (opts.path && e.body && e.body.type === 'no_matching_editor') {
-        await writeFile(opts.path, opts.text);
-        return null;
-      }
-      throw e;
-    }
-  }
+  //
+  // async prompt(opts = {}) {
+  //   const { body } = await this.io.performRequest('prompt', {}, {
+  //     message: opts.message,
+  //   });
+  //   return body;
+  // }
 
   /*
     Gets metadata about the current active editor file. Throws if no active

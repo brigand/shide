@@ -3,6 +3,7 @@
 import cp from 'child_process';
 import AtomShideView from './atom-shide-view';
 import { CompositeDisposable } from 'atom';
+import PromptUi from './ui/PromptUi';
 
 // We will import these relative to the working directory for the project
 // when atom-shide is activated
@@ -15,6 +16,9 @@ export default {
   modalPanel: null,
   subscriptions: null,
   processes: [],
+
+  // instance of one of our UI classes
+  currentUi: null,
 
   getWorkDir() {
     return atom.project.getPaths()[0];
@@ -37,6 +41,8 @@ export default {
   },
 
   async init() {
+    this.destroyUi();
+
     const wd = this.getWorkDir();
     try {
       getCommands = require(`${wd}/node_modules/shide/src/getCommands`);
@@ -396,6 +402,23 @@ export default {
           return;
         }
 
+        if (subtype === 'prompt') {
+          if (this.currentUi) this.currentUi.destroy();
+          this.currentUi = null;
+          this.currentUi = new PromptUi({
+            message: body.message,
+            callback: (err, res) => {
+              this.destroyUi();
+              reply({}, { response: res.response || '' });
+            },
+          });
+          this.currentUiModal = atom.workspace.addModalPanel({
+            item: this.currentUi.getElement(),
+            visible: true,
+          });
+          return;
+        }
+
 
         // Could be caused by a mismatch in atom-shide and shide package versions
         // or a bug in either package
@@ -444,8 +467,15 @@ export default {
     io.init();
   },
 
+  destroyUi() {
+    if (this.currentUi) this.currentUi.destroy();
+    if (this.currentUiModal) this.currentUiModal.destroy();
+    this.currentUi = null;
+    this.currentUiModal = null;
+  },
+
   deactivate() {
-    this.modalPanel.destroy();
+    this.destroyUi();
     this.subscriptions.dispose();
     this.atomShideView.destroy();
   },
