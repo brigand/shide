@@ -197,12 +197,7 @@ export default {
       async function applyCursor(path, cursor, errorOnFail = false) {
         const te = await getTeForOptionalPath(path, errorOnFail, true);
         if (!te) return;
-        const pane = getPaneByPath(path);
-        if (pane) {
-          pane.activateItem(te);
-        } else {
-          return;
-        }
+        await activateEditorForPath(path);
         if (cursor.row != null && cursor.col != null) {
           te.setCursorBufferPosition([cursor.row, cursor.col]);
         } else if (cursor.index != null) {
@@ -225,6 +220,7 @@ export default {
             }
           }
         }
+        await activateEditorForPath(path);
       }
 
       try {
@@ -404,11 +400,19 @@ export default {
 
         if (subtype === 'prompt') {
           if (this.currentUi) this.currentUi.destroy();
+
+          // Hack to get atom to restore focus to the text editor
+          // the activating pane items seems to not work in this case
+          const initialFocus = document.activeElement;
+
           this.currentUi = null;
           this.currentUi = new PromptUi({
             message: body.message,
-            callback: (err, res) => {
+            callback: async (err, res) => {
               this.destroyUi();
+              if (initialFocus) {
+                initialFocus.focus();
+              }
               reply({}, { response: res.response || '' });
             },
           });
