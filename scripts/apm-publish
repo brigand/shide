@@ -12,6 +12,7 @@ for f in *; do
   fi
 done
 
+initial_dir=$PWD
 cd ../../atom-shide-prepublish
 
 git add .
@@ -22,4 +23,8 @@ version=${1:-minor}
 apm publish $version
 
 cp package.json ../shide/atom-shide/package.json
+
+cd "$initial_dir"
+git commit -am 'published atom-shide, updates versions'
+
 
