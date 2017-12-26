@@ -206,7 +206,25 @@ const operations = [
         response: { type: 'string' },
       },
     },
-  }
+  },
+  {
+    name: 'select',
+    hasEffects: false,
+    input: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        fuzzyType: optional({ type: 'string' }),
+        options: { type: 'array' },
+      },
+    },
+    output: {
+      type: 'object',
+      properties: {
+        response: { type: 'string' },
+      },
+    },
+  },
 ];
 
 const schema = {

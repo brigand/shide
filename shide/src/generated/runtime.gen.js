@@ -281,5 +281,32 @@ class BaseGeneratedRuntime {
 
     return res.body;
   }
+
+  async select(input) {
+    try { assert.equal(!!input, true) } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input, 'object') } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input.message, 'string') } catch (e) {
+      throw new Error(`Expected input.message to be a string but got ${inspect(input.message)}`) }
+    try { assert.equal(Array.isArray(input.options), true) } catch (e) {
+      throw new Error(`Expected input.options to be an array but got ${inspect(input.options)}`) }
+
+
+    const res = await this.io.performRequest('select', {}, {
+        message: input.message,
+        fuzzyType: input.fuzzyType,
+        options: input.options,
+    });
+
+    try { assert.equal(!!res.body, true) } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+    try { assert.equal(typeof res.body, 'object') } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+    try { assert.equal(typeof res.body.response, 'string') } catch (e) {
+      throw new Error(`Expected res.body.response to be a string but got ${inspect(res.body.response)}`) }
+
+    return res.body;
+  }
 }
 module.exports = BaseGeneratedRuntime;
