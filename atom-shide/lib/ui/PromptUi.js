@@ -24,7 +24,9 @@ export default class PromptUi {
 
   makeInputEl() {
     const el = document.createElement('input');
+    el.type = 'text';
     el.classList.add('input');
+    el.classList.add('native-key-bindings');
     el.addEventListener('keyup', (event) => {
       if (event.key === 'Enter') {
         this.callback(null, { response: el.value });
