@@ -4,6 +4,7 @@ import cp from 'child_process';
 import AtomShideView from './atom-shide-view';
 import { CompositeDisposable } from 'atom';
 import PromptUi from './ui/PromptUi';
+import SelectUi from './ui/SelectUi';
 
 // We will import these relative to the working directory for the project
 // when atom-shide is activated
@@ -423,6 +424,32 @@ export default {
           return;
         }
 
+        if (subtype === 'select') {
+          if (this.currentUi) this.currentUi.destroy();
+
+          // Hack to get atom to restore focus to the text editor
+          // the activating pane items seems to not work in this case
+          const initialFocus = document.activeElement;
+
+          this.currentUi = null;
+          this.currentUi = new SelectUi({
+            message: body.message,
+            fuzzyType: body.fuzzyType,
+            options: body.options,
+            callback: async (err, res) => {
+              this.destroyUi();
+              if (initialFocus) {
+                initialFocus.focus();
+              }
+              reply({}, { response: res.response || '' });
+            },
+          });
+          this.currentUiModal = atom.workspace.addModalPanel({
+            item: this.currentUi.getElement(),
+            visible: true,
+          });
+          return;
+        }
 
         // Could be caused by a mismatch in atom-shide and shide package versions
         // or a bug in either package

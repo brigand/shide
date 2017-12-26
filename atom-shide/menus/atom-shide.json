@@ -1,10 +1,6 @@
 {
   "context-menu": {
     "atom-text-editor": [
-      {
-        "label": "Toggle atom-shide",
-        "command": "atom-shide:toggle"
-      }
     ]
   },
   "menu": [
@@ -15,8 +11,8 @@
           "label": "atom-shide",
           "submenu": [
             {
-              "label": "Toggle",
-              "command": "atom-shide:toggle"
+              "label": "Reload Shide",
+              "command": "atom-shide:reload"
             }
           ]
         }
