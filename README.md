@@ -37,8 +37,6 @@ Create that directory so we can start writing shide scripts.
 mkdir -p scripts/shide
 ```
 
-Restart atom now ("Window: Reload" in the command pallet).
-
 ## Usage
 
 Let's create our first shide script. It requires a config file, and a .js file.
@@ -48,6 +46,29 @@ echo '{}' > scripts/shide/hello-world.json
 touch scripts/shide/hello-world.js
 ```
 
-## TODO: more docs
+Restart atom now ("Window: Reload" in the command pallet).
 
+In hello-world.js we'll create a simple script. It gets the path of the currently
+open file in the editor, reads the content of that file, and then writes it back.
 
+```js
+exports.run = (ide) => {
+  const { path: activePath } = await ide.getActiveFile();
+  const { text } = await ide.getFileContent({ path: activePath });
+  const output = text.toLowerCase();
+  await ide.setFileContent({
+    path: activePath,
+    text: output,
+  });
+}
+```
+
+This is pretty similar to what you'd do in a normal script, getting the file
+path from the CLI, reading the text from the file system, and then writing the file.
+
+The difference is that this is integrated into your editor. It can see your open
+files, it can read the content even if you haven't saved them to disk, and you
+can update the file with or without saving it. You get an undo history item
+for the change.
+
+Having access to the editor state is the main advantage of shide over CLI scripts.
