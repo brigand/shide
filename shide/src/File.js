@@ -51,7 +51,7 @@ function makeFile(ide) {
       await ide.setFileContent({
         path: this.absPath,
         text: this.content,
-        cursor: { index: this.currCursorIndex },
+        cursor: opts.cursor ? opts.cursor : { index: this.currCursorIndex },
       });
 
       if (opts.save) {
