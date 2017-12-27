@@ -82,6 +82,18 @@ const CURSOR_INPUT = {
 
 const operations = [
   {
+    name: 'log',
+    hasEffects: true,
+    input: {
+      type: 'object',
+      properties: {
+        level: { type: 'string' },
+        message: { type: 'string' },
+      },
+    },
+    output: { type: 'null' }
+  },
+  {
     name: 'getOpenFiles',
     hasEffects: false,
     input: { type: 'null' },

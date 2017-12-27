@@ -3,6 +3,25 @@ const assert = require('assert');
 const { inspect } = require('util');
 
 class BaseGeneratedRuntime {
+  async log(input) {
+    try { assert.equal(!!input, true) } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input, 'object') } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input.level, 'string') } catch (e) {
+      throw new Error(`Expected input.level to be a string but got ${inspect(input.level)}`) }
+    try { assert.equal(typeof input.message, 'string') } catch (e) {
+      throw new Error(`Expected input.message to be a string but got ${inspect(input.message)}`) }
+
+
+    const res = await this.io.performRequest('log', {}, {
+        level: input.level,
+        message: input.message,
+    });
+
+    return res.body;
+  }
+
   async getOpenFiles() {
 
     const res = await this.io.performRequest('getOpenFiles', {});

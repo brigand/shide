@@ -36,6 +36,25 @@ export default class AtomShideCore {
 
   // eslint-disable-next-line
   async handleMessage({ command, reqId, meta, body, subtype }) {
+    if (subtype === 'log') {
+      const { level, message } = body;
+      const levels = ['silly', 'debug', 'verbose', 'info', 'success', 'warn', 'error'];
+      const toConsole = levels.slice(0, levels.indexOf('verbose'));
+      const toNotify = levels.slice(levels.indexOf('info'));
+      if (toConsole.includes(level)) {
+        if (level === 'error') console.error(`${level}:`, message);
+        else if (level === 'warn') console.warn(`${level}:`, message);
+        else console.debug(`${level}:`, message);
+      }
+      if (toNotify.includes(level)) {
+        const display = `${command.displayName}: ${message}`;
+        if (level === 'success') atom.notifications.addSuccess(display);
+        if (level === 'error') atom.notifications.addError(display);
+        if (level === 'warn') atom.notifications.addWarning(display);
+      }
+
+      return new cu.Success({});
+    }
     if (subtype === 'getOpenFiles') {
       const paths = atom.workspace.getPaneItems()
         .map((x) => {
