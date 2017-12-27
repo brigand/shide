@@ -21,7 +21,7 @@ export default class SelectUi {
         fuzzyType={opts.fuzzyType}
         allowAnyText={!!opts.allowAnyText}
         options={options}
-        onSelect={(value) => callback(null, { response: value })}
+        onSelect={(value) => callback(null, { response: value && value.value })}
         onCancel={() => callback(null, { response: '' })}
       />,
       this.element,

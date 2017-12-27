@@ -18,15 +18,13 @@ class SelectOptions extends Component {
   }
 
   renderItem(x, i) {
-    const text = this.props.extract(x);
+    const html = this.props.extract.displayHtml(x);
 
     let className = `ShideSelectOptions__Item`;
     if (i === this.props.activeItem) className = `${className} ShideSelectOptions__Item--active`;
 
     return (
-      <div class={className}>
-        {text}
-      </div>
+      <div class={className} dangerouslySetInnerHTML={{ __html: html }} />
     );
   }
 }

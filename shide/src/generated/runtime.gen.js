@@ -303,8 +303,6 @@ class BaseGeneratedRuntime {
       throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
     try { assert.equal(typeof res.body, 'object') } catch (e) {
       throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
-    try { assert.equal(typeof res.body.response, 'string') } catch (e) {
-      throw new Error(`Expected res.body.response to be a string but got ${inspect(res.body.response)}`) }
 
     return res.body;
   }

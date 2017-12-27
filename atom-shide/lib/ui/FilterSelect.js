@@ -6,23 +6,33 @@ import Input from './Input';
 import SelectOptions from './SelectOptions';
 import fuzzy from './fuzzyStrategies';
 
+const htmlEscape = str => {
+  var n = document.createElement('div');
+  n.textContent = str;
+  return n.innerHTML;
+};
+
 class FilterSelect extends Component {
   constructor(props) {
     super(props);
     this.state = { search: '', activeItem: 0 };
 
     // used for display and fuzzy search
-    this.extract = x => x.text;
+    this.extract = {
+      search: x => x.text,
+      displayText: x => x.text,
+      displayHtml: x => x.html || htmlEscape(x.text),
+    };
   }
 
   filter(search = this.state.search) {
     if (!search) return this.props.options;
 
-    return fuzzy.normal(search, this.props.options, this.extract);
+    return fuzzy.normal(search, this.props.options, this.extract.search);
   }
 
   filterCap(search) {
-    return this.filter(search).slice(0, 25);
+    return this.filter(search).slice(0, 100);
   }
 
   clipActiveItem(_index, xs = this.filterCap()) {
@@ -53,7 +63,10 @@ class FilterSelect extends Component {
             activeItem = this.clipActiveItem(this.state.activateItem, this.filterCap(activeItem));
             this.setState({ search, activeItem });
           }}
-          onSubmit={() => {}}
+          onSubmit={() => {
+            const item = filtered[this.state.activeItem];
+            this.props.onSelect(item);
+          }}
           onCancel={this.props.onCancel}
           onDirectional={(direction) => {
             if (direction === 'Up') {

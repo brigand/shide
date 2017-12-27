@@ -221,7 +221,7 @@ const operations = [
     output: {
       type: 'object',
       properties: {
-        response: { type: 'string' },
+        response: { type: 'any' },
       },
     },
   },
