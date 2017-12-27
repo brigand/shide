@@ -37,14 +37,15 @@ function makeFile(ide) {
 
     /*
       Update the file in the text editor if it's open, but otherwise update
-      the file on disk. If text (1st arg) is provided, it'll be set to that text.
-      If cursor (2nd arg) is passed, it'll use that cursor position.
+      the file on disk. If opts.text is provided, it'll be set to that text.
+      If opts.cursor is passed, it'll use that cursor position.
+      If opts.save is provided, it'll save the file after writing it.
     */
-    async write(text = null, cursor = null) {
-      if (text != null) this.content = text;
-      if (cursor != null) {
-        this.cursor = cursor;
-        this.currCursorIndex = cursor.index;
+    async write(opts = {}) {
+      if (opts.text != null) this.content = opts.text;
+      if (opts.cursor != null) {
+        this.cursor = opts.cursor;
+        this.currCursorIndex = opts.cursor.index;
       }
 
       await ide.setFileContent({
@@ -52,6 +53,14 @@ function makeFile(ide) {
         text: this.content,
         cursor: { index: this.currCursorIndex },
       });
+
+      if (opts.save) {
+        await this.save();
+      }
+    }
+
+    async save() {
+      await ide.saveFile({ path: this.absPath });
     }
 
     ///// Helper functions
