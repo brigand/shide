@@ -237,6 +237,20 @@ const operations = [
       },
     },
   },
+  {
+    name: 'makeMapped',
+    hasEffects: true,
+    input: {
+      type: 'object',
+      properties: {
+        ranges: { type: 'array' },
+      },
+    },
+    output: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 const schema = {

@@ -28,7 +28,7 @@ class MappedFile {
     const firstFile = opts.ranges[0].path.split(/[/\\]/).pop().split('.').shift();
 
     const random = crypto.randomBytes(6).toString('hex');
-    this.filePath = pathResolve(os.tmpdir(), `${firstFile}${random}.txt`);
+    this.filePathBase = pathResolve(os.tmpdir(), `${firstFile}${random}`);
     return this.initFilePair();
   }
 
@@ -59,7 +59,7 @@ class MappedFile {
 
     // Then the second file we take the range slices
     ranges.forEach((range) => {
-      mappedFile += `${getMappedBlock(range)}\n`;
+      mappedFile += `${getMappedBlock(range)}\n\n`;
     });
 
     this.mappedOriginal = mappedOriginal;
@@ -87,6 +87,16 @@ class MappedFile {
     }
 
     return out;
+  }
+
+  writeToDisk() {
+    const { filePathBase, mappedOriginal, mappedFile } = this;
+
+    const mappedFileName = `${filePathBase}.mapped.js`;
+    fs.writeFileSync(`${filePathBase}.original.txt`, mappedOriginal);
+    fs.writeFileSync(mappedFileName, mappedFile);
+
+    return mappedFileName;
   }
 }
 

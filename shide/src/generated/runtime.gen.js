@@ -325,5 +325,26 @@ class BaseGeneratedRuntime {
 
     return res.body;
   }
+
+  async makeMapped(input) {
+    try { assert.equal(!!input, true) } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(typeof input, 'object') } catch (e) {
+      throw new Error(`Expected input to be an object but got ${inspect(input)}`) }
+    try { assert.equal(Array.isArray(input.ranges), true) } catch (e) {
+      throw new Error(`Expected input.ranges to be an array but got ${inspect(input.ranges)}`) }
+
+
+    const res = await this.io.performRequest('makeMapped', {}, {
+        ranges: input.ranges,
+    });
+
+    try { assert.equal(!!res.body, true) } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+    try { assert.equal(typeof res.body, 'object') } catch (e) {
+      throw new Error(`Expected res.body to be an object but got ${inspect(res.body)}`) }
+
+    return res.body;
+  }
 }
 module.exports = BaseGeneratedRuntime;

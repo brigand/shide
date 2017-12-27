@@ -6,6 +6,8 @@ import SelectUi from '../ui/SelectUi';
 
 export default class AtomShideCore {
   constructor() {
+    const wd = atom.project.getPaths()[0];
+    this.MappedFile = require(`${wd}/node_modules/shide/src/mapped/MappedFile`);
   }
   async runForIo(io, command) {
     // eslint-disable-next-line
@@ -221,6 +223,19 @@ export default class AtomShideCore {
         visible: true,
       });
       return resP;
+    }
+
+    if (subtype === 'makeMapped') {
+      const mf = new this.MappedFile();
+      mf.init({ ranges: body.ranges });
+      const outFile = mf.writeToDisk();
+      await atom.workspace.open(outFile, {
+        activatePane: true,
+        pending: false,
+        searchAllPanes: false,
+      });
+
+      return new cu.Success({ success: true });
     }
 
     // Could be caused by a mismatch in atom-shide and shide package versions
