@@ -46,6 +46,7 @@ export default class Input extends Component {
             this.props.onDirectional('Down');
           }
         }}
+        onBlur={this.props.onBlur}
       />
     )
   }

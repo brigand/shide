@@ -55,7 +55,15 @@ class SelectOptions extends Component {
     if (i === this.props.activeItem) className = `${className} ShideSelectOptions__Item--active`;
 
     return (
-      <div class={className} dangerouslySetInnerHTML={{ __html: html }} />
+      <div
+        // This stops the input losing focus, which mainly happens when they hold
+        // the mouse down for a bit
+        onMouseDown={(e) => e.preventDefault()}
+
+        class={className}
+        dangerouslySetInnerHTML={{ __html: html }}
+        onClick={() => this.props.onSelect(x)}
+      />
     );
   }
 }

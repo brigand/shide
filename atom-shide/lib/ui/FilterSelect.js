@@ -78,11 +78,18 @@ class FilterSelect extends Component {
               this.setState({ activeItem });
             }
           }}
+          onBlur={() => {
+            this.props.onCancel();
+          }}
         />
         <SelectOptions
           activeItem={this.state.activeItem}
           options={this.filterCap()}
           extract={this.extract}
+          // Handle the items being clicked
+          onSelect={(item) => {
+            this.props.onSelect(item);
+          }}
         />
       </div>
     );
