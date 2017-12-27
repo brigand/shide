@@ -2,6 +2,7 @@
 const fs = require('fs');
 const pify = require('util.promisify');
 const IoManager = require('./IoManager');
+const makeFile = require('./File');
 
 const BaseGeneratedRuntime = require('./generated/runtime.gen.js');
 
@@ -17,6 +18,7 @@ class ShideRuntime extends BaseGeneratedRuntime {
   constructor(opts = {}) {
     super();
     this.args = opts.inputArgs || {};
+    this.File = makeFile(this);
   }
 
   init() {
