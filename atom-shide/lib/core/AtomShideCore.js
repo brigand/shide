@@ -50,6 +50,7 @@ export default class AtomShideCore {
       }
       if (toNotify.includes(level)) {
         const display = `${command.displayName}: ${message}`;
+        if (level === 'info') atom.notifications.addInfo(display);
         if (level === 'success') atom.notifications.addSuccess(display);
         if (level === 'error') atom.notifications.addError(display);
         if (level === 'warn') atom.notifications.addWarning(display);
